@@ -17,11 +17,18 @@
 #' 
 #' runCorrelation(exprMat_filtered, scenicOptions)
 #' @export 
-runCorrelation <- function(exprMat_filtered,scenicOptions)
+runCorrelation <- function (exprMat_filtered, scenicOptions) 
 {
-  corrMat <- cor(t(exprMat_filtered), method="spearman")
-  saveRDS(corrMat, file=getIntName(scenicOptions, "corrMat"))
+    corrMat <- foreach(i = seq_len(ncol(exprMat_filtered)),
+                       .combine = rbind,
+                       .multicombine = TRUE,
+                       .inorder = FALSE,
+                       .packages = c('data.table', 'doParallel')) %dopar% {
+                         cor(exprMat_filtered[,i], exprMat_filtered, method = 'spearman')
 }
+
+    
+    saveRDS(corrMat, file = getIntName(scenicOptions, "corrMat"))
 
 
 
